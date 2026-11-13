@@ -111,7 +111,7 @@ async function home(){
    +sec('🔥 الأكثر رواجاً',d.t)+sec('⭐ الأكثر شعبية',d.p)+sec('🏆 الأعلى تقييماً',d.r);
 }
 
-let bs={g:'',s:'POPULARITY_DESC',page:1,q:''};
+let bs={g:'',s:'POPULAROPARITY_DESC',page:1,q:''};
 async function browse(q){
   if(q!==undefined)bs={g:'',s:q?'SEARCH_MATCH':'POPULARITY_DESC',page:1,q};
   app.innerHTML=`<h2>${bs.q?'نتائج البحث: '+esc(bs.q):'تصفح الأنمي'}</h2>
@@ -157,9 +157,8 @@ async function detail(id){
 
 const W={si:0};
 const CFG=()=>[
-  { name: "سيرفر VidSrc (الأساسي)", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
-  { name: "سيرفر Multiembed", url: "https://multiembed.mov/?video_type=series&anilist_id=${id}&ep=${ep}" },
-  { name: "سيرفر VidSrc.me", url: "https://vidsrc.me/embed/anime?anilist=${id}&episode=${ep}" }
+  { name: "سيرفر VidSrc الأساسي", url: "https://vidsrc.xyz/embed/anime?anilist=${id}&episode=${ep}" },
+  { name: "سيرفر VidSrc البديل", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" }
 ];
 
 async function watch(id,ep){
@@ -179,7 +178,7 @@ async function watch(id,ep){
   <div id="player"></div>
   
   <div class="ai-banner">
-    <span>✨ نظام التشغيل الاحترافي وسيرفرات البث البديلة نشطة</span>
+    <span>✨ نظام السيرفرات المحدث والمستقر يعمل الآن</span>
     <span style="font-size:11px;color:var(--s)">عربي (AI Translated)</span>
   </div>
 
