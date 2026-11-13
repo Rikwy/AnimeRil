@@ -157,8 +157,8 @@ async function detail(id){
 
 const W={si:0,lang:'sub'};
 const CFG=()=>[
-  { name: "سيرفر 1", type: "iframe", url: "https://vidsrc.me/embed/anime?anilist={id}&episode={ep}" },
-  { name: "سيرفر 2", type: "iframe", url: "https://iframe.vidsrc.xyz/embed/anime?anilist={id}&episode={ep}" },
+  { name: "سيرفر 1", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/{id}/{ep}" },
+  { name: "سيرفر 2", type: "iframe", url: "https://vidlink.pro/anime/{id}/{ep}" },
   { name: "سيرفر 3", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/{id}/{ep}" }
 ];
 async function watch(id,ep){
