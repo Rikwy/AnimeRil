@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AnimeRil | أنمي ريل</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<!-- مكتبة المشغل Artplayer و HLS -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
 <style>
 :root{--bg:#080B14;--bg2:#101625;--p:#8B5CF6;--s:#06B6D4;--t:#F8FAFC;--m:#94A3B8;--g:rgba(255,255,255,.06);--b:rgba(255,255,255,.1)}
 *{box-sizing:border-box;margin:0}
@@ -160,8 +157,9 @@ async function detail(id){
 
 const W={si:0};
 const CFG=()=>[
-  { name: "سيرفر البث الأساسي", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
-  { name: "سيرفر البث البديل", url: "https://autoembed.cc/embed/anime/anilist/${id}/${ep}" }
+  { name: "سيرفر VidSrc (الأساسي)", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
+  { name: "سيرفر Multiembed", url: "https://multiembed.mov/?video_type=series&anilist_id=${id}&ep=${ep}" },
+  { name: "سيرفر VidSrc.me", url: "https://vidsrc.me/embed/anime?anilist=${id}&episode=${ep}" }
 ];
 
 async function watch(id,ep){
@@ -181,7 +179,7 @@ async function watch(id,ep){
   <div id="player"></div>
   
   <div class="ai-banner">
-    <span>✨ جاهز للتشغيل بمعرفات الأنمي الصحيحة</span>
+    <span>✨ نظام التشغيل الاحترافي وسيرفرات البث البديلة نشطة</span>
     <span style="font-size:11px;color:var(--s)">عربي (AI Translated)</span>
   </div>
 
