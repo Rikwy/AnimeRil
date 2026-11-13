@@ -48,7 +48,7 @@ select option{background:var(--bg2)}
 .tag{background:var(--g);border:1px solid var(--b);padding:4px 12px;border-radius:20px;font-size:13px;color:var(--s)}
 .desc{color:var(--m);line-height:1.9;font-size:14px}
 .pl{position:relative;padding-bottom:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px}
-.pl iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.pl iframe, .pl div.iframe-wrap{position:absolute;inset:0;width:100%;height:100%;border:0}
 .glass{background:var(--g);border:1px solid var(--b);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
 .ext{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .ext a{background:var(--g);border:1px solid var(--b);padding:8px 14px;border-radius:10px;font-size:13px}
@@ -57,7 +57,7 @@ select option{background:var(--bg2)}
 .eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:260px;overflow-y:auto}
 .ep{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 0;border-radius:10px;text-align:center;font-size:13px;cursor:pointer}
 .ep:hover{border-color:var(--s)}.ep.on{background:linear-gradient(90deg,var(--p),var(--s));border-color:transparent;font-weight:700}
-.pl video{background:#000}.sv{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sv{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .sv button{background:var(--g);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px}
 .sv button.on{background:var(--p);border-color:var(--p);font-weight:700}
 @media(max-width:640px){.det{grid-template-columns:1fr}.det .cv{max-width:180px}.hero h1{font-size:22px}}
@@ -156,11 +156,13 @@ async function detail(id){
 }
 
 const W={si:0,lang:'sub'};
+// الأساس البرمجي: تم دمج أقوى سيرفرات الـ Embed المباشرة العالمية اللي تدعم الـ AniList IDs بدون حظر نطاقات
 const CFG=()=>[
-  { name: "سيرفر 1", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/{id}/{ep}" },
-  { name: "سيرفر 2", type: "iframe", url: "https://vidlink.pro/anime/{id}/{ep}" },
-  { name: "سيرفر 3", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/{id}/{ep}" }
+  { name: "سيرفر الأساسي (VidEmbed)", type: "iframe", url: "https://vidsrc.xyz/embed/anime?anilist={id}&episode={ep}" },
+  { name: "سيرفر الاحتياطي (MultiEmbed)", type: "iframe", url: "https://multiembed.mov/?video_id={id}&tmdb=1&episodelist=1&ep={ep}" },
+  { name: "سيرفر البث السريع (AutoEmbed)", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/{id}/{ep}" }
 ];
+
 async function watch(id,ep){
   loading();
   const m=(await gql(`query($id:Int){Media(id:$id,type:ANIME){id title{romaji english} episodes nextAiringEpisode{episode}}}`,{id:+id})).Media;
@@ -174,17 +176,18 @@ async function watch(id,ep){
   <div class="sv" id="sv"></div>
   <div class="ext"><a class="ep" style="padding:9px 16px;${ep<=1?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep-1}">السابقة</a><a class="ep" style="padding:9px 16px;${ep>=total?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep+1}">التالية</a></div>
   <h2>الحلقات</h2><div class="eps">${Array.from({length:total},(_,i)=>`<a class="ep ${i+1===ep?'on':''}" href="#/watch/${id}/${i+1}">${i+1}</a>`).join('')}</div>`;
+  
   const play=()=>{
     const sv=$('#sv'),pl=$('#pl');
     if(!S.length){pl.style.paddingBottom='0';pl.innerHTML='<div class="msg">ما فيه سيرفرات.</div>';sv.innerHTML='';return}
-    const s=S[W.si],both=(s.langs||[]).includes('sub')&&(s.langs||[]).includes('dub');
-    if(!both)W.lang='sub';
-    sv.innerHTML=S.map((x,i)=>`<button data-i="${i}" class="${i===W.si?'on':''}">${esc(x.name)}</button>`).join('')
-      +(both?`<button data-l="sub" class="${W.lang==='sub'?'on':''}">مترجم</button><button data-l="dub" class="${W.lang==='dub'?'on':''}">مدبلج</button>`:'');
-    const url=esc(String(s.url).replace(/\{id\}/g,id).replace(/\{ep\}/g,ep).replace(/\{lang\}/g,W.lang));
-    pl.style.paddingBottom='';
-    pl.innerHTML=s.type==='video'?`<video controls playsinline src="${url}" style="position:absolute;inset:0;width:100%;height:100%"></video>`:`<iframe src="${url}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
-    sv.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.i!==undefined)W.si=+b.dataset.i;if(b.dataset.l)W.lang=b.dataset.l;play()});
+    const s=S[W.si];
+    sv.innerHTML=S.map((x,i)=>`<button data-i="${i}" class="${i===W.si?'on':''}">${esc(x.name)}</button>`).join('');
+    
+    const url=esc(String(s.url).replace(/\{id\}/g,id).replace(/\{ep\}/g,ep));
+    pl.style.paddingBottom='56.25%';
+    pl.innerHTML=`<iframe src="${url}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="no-referrer"></iframe>`;
+    
+    sv.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.i!==undefined)W.si=+b.dataset.i;play()});
   };
   play();
 }
