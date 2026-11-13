@@ -48,7 +48,7 @@ select option{background:var(--bg2)}
 .tag{background:var(--g);border:1px solid var(--b);padding:4px 12px;border-radius:20px;font-size:13px;color:var(--s)}
 .desc{color:var(--m);line-height:1.9;font-size:14px}
 .pl{position:relative;padding-bottom:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px}
-.pl iframe, .pl div.iframe-wrap{position:absolute;inset:0;width:100%;height:100%;border:0}
+.pl iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .glass{background:var(--g);border:1px solid var(--b);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
 .ext{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .ext a{background:var(--g);border:1px solid var(--b);padding:8px 14px;border-radius:10px;font-size:13px}
@@ -77,7 +77,7 @@ const CARD='id title{romaji english} coverImage{large} averageScore episodes for
 const ST={FINISHED:'مكتمل',RELEASING:'يعرض حالياً',NOT_YET_RELEASED:'لم يعرض بعد',CANCELLED:'ملغي',HIATUS:'متوقف'};
 const GEN={Action:'أكشن',Adventure:'مغامرة',Comedy:'كوميدي',Drama:'دراما',Fantasy:'فانتازيا',Horror:'رعب',Mystery:'غموض',Romance:'رومانسي','Sci-Fi':'خيال علمي','Slice of Life':'شريحة من الحياة',Sports:'رياضة',Supernatural:'خارق للطبيعة',Thriller:'إثارة',Mecha:'ميكا',Music:'موسيقى',Psychological:'نفسي'};
 const gen=g=>GEN[g]||g, ttl=m=>m.title.english||m.title.romaji;
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;N'}[c]));
 const cache={};
 
 async function gql(query,variables={}){
@@ -155,12 +155,12 @@ async function detail(id){
   $('#fb').onclick=()=>{favs.toggle({id:m.id,title:m.title,coverImage:m.coverImage,averageScore:m.averageScore,episodes:m.episodes,format:m.format});detail(id)};
 }
 
-const W={si:0,lang:'sub'};
-// الأساس البرمجي: تم دمج أقوى سيرفرات الـ Embed المباشرة العالمية اللي تدعم الـ AniList IDs بدون حظر نطاقات
+const W={si:0};
+// تحديث سيرفرات المشاهدة المباشرة المخصصة للأنمي بروابط أكثر استقراراً
 const CFG=()=>[
-  { name: "سيرفر الأساسي (VidEmbed)", type: "iframe", url: "https://vidsrc.xyz/embed/anime?anilist={id}&episode={ep}" },
-  { name: "سيرفر الاحتياطي (MultiEmbed)", type: "iframe", url: "https://multiembed.mov/?video_id={id}&tmdb=1&episodelist=1&ep={ep}" },
-  { name: "سيرفر البث السريع (AutoEmbed)", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/{id}/{ep}" }
+  { name: "سيرفر VidStreaming", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
+  { name: "سيرفر AniEmbed", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/${id}/${ep}" },
+  { name: "سيرفر VidSrc المباشر", type: "iframe", url: "https://vidsrc.xyz/embed/anime?anilist=${id}&episode=${ep}" }
 ];
 
 async function watch(id,ep){
@@ -170,6 +170,7 @@ async function watch(id,ep){
   ep=Math.min(Math.max(+ep||1,1),total);
   try{localStorage.setItem('ar_ep_'+id,ep)}catch(e){}
   const S=CFG();if(W.si>=S.length)W.si=0;
+  
   app.innerHTML=`<a href="#/anime/${id}" class="desc">← ${esc(ttl(m))}</a>
   <h2 style="margin-top:8px">الحلقة ${ep} من ${total}</h2>
   <div class="pl" id="pl"></div>
@@ -183,7 +184,8 @@ async function watch(id,ep){
     const s=S[W.si];
     sv.innerHTML=S.map((x,i)=>`<button data-i="${i}" class="${i===W.si?'on':''}">${esc(x.name)}</button>`).join('');
     
-    const url=esc(String(s.url).replace(/\{id\}/g,id).replace(/\{ep\}/g,ep));
+    // تصحيح تعويض المتغيرات داخل الروابط
+    const url=s.url.replace(/\$\{id\}/g,id).replace(/\$\{ep\}/g,ep);
     pl.style.paddingBottom='56.25%';
     pl.innerHTML=`<iframe src="${url}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="no-referrer"></iframe>`;
     
