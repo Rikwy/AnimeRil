@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnimeRil | أنمي ريل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080B14;--bg2:#101625;--p:#8B5CF6;--s:#06B6D4;--t:#F8FAFC;--m:#94A3B8;--g:rgba(255,255,255,.06);--b:rgba(255,255,255,.1)}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(900px 500px at 85% -10%,rgba(139,92,246,.25),transparent),radial-gradient(700px 400px at 0% 20%,rgba(6,182,212,.14),transparent),var(--bg);background-attachment:fixed;color:var(--t);font-family:Tajawal,Tahoma,sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button,input,select{font-family:inherit}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 5%;background:rgba(8,11,20,.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--b);flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px;background:linear-gradient(90deg,var(--p),var(--s));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{display:flex;gap:6px}
+nav a{padding:7px 13px;border-radius:10px;color:var(--m);font-size:14px}
+nav a.on,nav a:hover{background:var(--g);color:var(--t)}
+.sb{flex:1;min-width:180px;display:flex}
+.sb input{width:100%;background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 14px;border-radius:12px;outline:none;font-size:14px}
+.sb input:focus{border-color:var(--p)}
+main{padding:20px 5% 60px;max-width:1300px;margin:auto}
+h2{font-size:19px;margin:26px 0 12px}
+.hero{position:relative;border-radius:20px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;background:var(--bg2) center/cover;border:1px solid var(--b)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg) 5%,rgba(8,11,20,.35) 70%)}
+.hero>div{position:relative;z-index:1;padding:22px;max-width:620px}
+.hero h1{font-size:28px;margin-bottom:8px}
+.hero p{color:var(--m);font-size:14px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--p),var(--s));border:0;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:14px;font-size:14px}
+.btn.alt{background:var(--g);border:1px solid var(--b)}
+.row{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.row .card{flex:0 0 150px}
+.card{position:relative;border-radius:14px;overflow:hidden;background:var(--bg2);border:1px solid var(--b);transition:.2s}
+.card:hover{transform:translateY(-4px);border-color:var(--p)}
+.card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:var(--bg2)}
+.card .i{padding:8px 10px;font-size:13px}
+.card .i b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card .i span{color:var(--m);font-size:12px}
+.sc{position:absolute;top:8px;left:8px;background:rgba(8,11,20,.8);backdrop-filter:blur(6px);padding:2px 8px;border-radius:8px;font-size:12px;color:#FACC15}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+select{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 12px;border-radius:10px}
+select option{background:var(--bg2)}
+.det{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:10px}
+.det .cv{width:100%;border-radius:16px;border:1px solid var(--b)}
+.bn{height:200px;border-radius:20px;background:var(--bg2) center/cover;border:1px solid var(--b)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tag{background:var(--g);border:1px solid var(--b);padding:4px 12px;border-radius:20px;font-size:13px;color:var(--s)}
+.desc{color:var(--m);line-height:1.9;font-size:14px}
+.pl{position:relative;padding-bottom:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px}
+.pl iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.glass{background:var(--g);border:1px solid var(--b);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
+.ext{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.ext a{background:var(--g);border:1px solid var(--b);padding:8px 14px;border-radius:10px;font-size:13px}
+.ext a:hover{border-color:var(--s)}
+.msg{text-align:center;color:var(--m);padding:40px}
+.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:260px;overflow-y:auto}
+.ep{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 0;border-radius:10px;text-align:center;font-size:13px;cursor:pointer}
+.ep:hover{border-color:var(--s)}.ep.on{background:linear-gradient(90deg,var(--p),var(--s));border-color:transparent;font-weight:700}
+.pl video{background:#000}.sv{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sv button{background:var(--g);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px}
+.sv button.on{background:var(--p);border-color:var(--p);font-weight:700}
+@media(max-width:640px){.det{grid-template-columns:1fr}.det .cv{max-width:180px}.hero h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <a href="#/" class="logo">AnimeRil</a>
+  <nav><a href="#/" data-r="home">الرئيسية</a><a href="#/browse" data-r="browse">تصفح</a><a href="#/favs" data-r="favs">المفضلة</a></nav>
+  <form class="sb" id="sf"><input id="q" placeholder="ابحث عن أنمي..." autocomplete="off"></form>
+</header>
+<main id="app"></main>
+
+<script>
+const API='https://graphql.anilist.co',$=s=>document.querySelector(s),app=$('#app');
+const CARD='id title{romaji english} coverImage{large} averageScore episodes format';
+const ST={FINISHED:'مكتمل',RELEASING:'يعرض حالياً',NOT_YET_RELEASED:'لم يعرض بعد',CANCELLED:'ملغي',HIATUS:'متوقف'};
+const GEN={Action:'أكشن',Adventure:'مغامرة',Comedy:'كوميدي',Drama:'دراما',Fantasy:'فانتازيا',Horror:'رعب',Mystery:'غموض',Romance:'رومانسي','Sci-Fi':'خيال علمي','Slice of Life':'شريحة من الحياة',Sports:'رياضة',Supernatural:'خارق للطبيعة',Thriller:'إثارة',Mecha:'ميكا',Music:'موسيقى',Psychological:'نفسي'};
+const gen=g=>GEN[g]||g, ttl=m=>m.title.english||m.title.romaji;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cache={};
+
+async function gql(query,variables={}){
+  const k=query+JSON.stringify(variables);
+  if(cache[k])return cache[k];
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query,variables})});
+  if(!r.ok)throw new Error(r.status);
+  const j=await r.json();
+  if(j.errors)throw new Error(j.errors[0].message);
+  return cache[k]=j.data;
+}
+
+const favs={
+  get(){try{return JSON.parse(localStorage.getItem('ar_favs')||'[]')}catch(e){return[]}},
+  has(id){return this.get().some(a=>a.id===id)},
+  toggle(a){let l=this.get();l=this.has(a.id)?l.filter(x=>x.id!==a.id):[a,...l];try{localStorage.setItem('ar_favs',JSON.stringify(l))}catch(e){}}
+};
+
+const card=m=>`<a class="card" href="#/anime/${m.id}"><span class="sc">${m.averageScore?'★ '+(m.averageScore/10).toFixed(1):'—'}</span><img loading="lazy" src="${m.coverImage.large}" alt=""><div class="i"><b>${esc(ttl(m))}</b><span>${m.format||''}${m.episodes?' • '+m.episodes+' حلقة':''}</span></div></a>`;
+const loading=()=>app.innerHTML='<div class="msg">جاري التحميل...</div>';
+const fail=()=>app.innerHTML='<div class="msg">تعذر الاتصال بـ AniList. تأكد من الإنترنت وحاول مرة ثانية.</div>';
+
+async function home(){
+  loading();
+  const d=await gql(`query{
+    t:Page(perPage:12){media(type:ANIME,sort:TRENDING_DESC,isAdult:false){${CARD} bannerImage description(asHtml:false)}}
+    p:Page(perPage:12){media(type:ANIME,sort:POPULARITY_DESC,isAdult:false){${CARD}}}
+    r:Page(perPage:12){media(type:ANIME,sort:SCORE_DESC,isAdult:false){${CARD}}}
+  }`);
+  const h=d.t.media.find(m=>m.bannerImage)||d.t.media[0];
+  const sec=(n,l)=>`<h2>${n}</h2><div class="row">${l.media.map(card).join('')}</div>`;
+  app.innerHTML=`<div class="hero" style="background-image:url('${h.bannerImage||h.coverImage.large}')"><div><h1>${esc(ttl(h))}</h1><p>${esc((h.description||'').replace(/<[^>]*>/g,''))}</p><a class="btn" href="#/anime/${h.id}">التفاصيل</a></div></div>`
+   +sec('🔥 الأكثر رواجاً',d.t)+sec('⭐ الأكثر شعبية',d.p)+sec('🏆 الأعلى تقييماً',d.r);
+}
+
+let bs={g:'',s:'POPULARITY_DESC',page:1,q:''};
+async function browse(q){
+  if(q!==undefined)bs={g:'',s:q?'SEARCH_MATCH':'POPULARITY_DESC',page:1,q};
+  app.innerHTML=`<h2>${bs.q?'نتائج البحث: '+esc(bs.q):'تصفح الأنمي'}</h2>
+  <div class="bar"><select id="fg"><option value="">كل التصنيفات</option>${Object.keys(GEN).map(g=>`<option value="${g}" ${bs.g===g?'selected':''}>${GEN[g]}</option>`).join('')}</select>
+  <select id="fs">${[['POPULARITY_DESC','الأشهر'],['SCORE_DESC','الأعلى تقييماً'],['TRENDING_DESC','الأكثر رواجاً'],['START_DATE_DESC','الأحدث']].map(o=>`<option value="${o[0]}" ${bs.s===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+  <div class="grid" id="gr"></div><div class="msg" id="mo"></div>`;
+  $('#fg').onchange=e=>{bs.g=e.target.value;bs.page=1;load(true)};
+  $('#fs').onchange=e=>{bs.s=e.target.value;bs.page=1;load(true)};
+  load(true);
+}
+async function load(reset){
+  const gr=$('#gr'),mo=$('#mo');if(!gr)return;
+  if(reset)gr.innerHTML='';
+  mo.innerHTML='جاري التحميل...';
+  try{
+    const sort=bs.q&&bs.s==='SEARCH_MATCH'?'SEARCH_MATCH':bs.s;
+    const d=await gql(`query($p:Int,$s:String,$g:String,$o:[MediaSort]){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(type:ANIME,isAdult:false,search:$s,genre:$g,sort:$o){${CARD}}}}`,
+      {p:bs.page,s:bs.q||undefined,g:bs.g||undefined,o:[sort==='SEARCH_MATCH'?'SEARCH_MATCH':sort]});
+    gr.insertAdjacentHTML('beforeend',d.Page.media.map(card).join(''));
+    if(!gr.children.length)mo.textContent='لا توجد نتائج';
+    else if(d.Page.pageInfo.hasNextPage){mo.innerHTML='<button class="btn alt" id="lm">عرض المزيد</button>';$('#lm').onclick=()=>{bs.page++;load()}}
+    else mo.textContent='';
+  }catch(e){mo.textContent='تعذر التحميل، حاول مرة ثانية.'}
+}
+
+async function detail(id){
+  loading();
+  const m=(await gql(`query($id:Int){Media(id:$id,type:ANIME){${CARD} bannerImage description(asHtml:false) status season seasonYear genres duration studios(isMain:true){nodes{name}} trailer{id site} externalLinks{site url type}}}`,{id:+id})).Media;
+  const fav=favs.has(m.id),desc=(m.description||'لا يوجد وصف.').replace(/<br\s*\/?>/g,'\n').replace(/<[^>]*>/g,'');
+  app.innerHTML=`${m.bannerImage?`<div class="bn" style="background-image:url('${m.bannerImage}')"></div>`:''}
+  <div class="det"><div><img class="cv" src="${m.coverImage.large}" alt=""></div><div>
+    <h1>${esc(ttl(m))}</h1><div class="desc">${esc(m.title.romaji)}</div>
+    <div class="tags"><span class="tag">★ ${m.averageScore?(m.averageScore/10).toFixed(1):'—'}</span><span class="tag">${ST[m.status]||m.status}</span>${m.episodes?`<span class="tag">${m.episodes} حلقة</span>`:''}${m.duration?`<span class="tag">${m.duration} د/حلقة</span>`:''}${m.seasonYear?`<span class="tag">${m.seasonYear}</span>`:''}${(m.studios.nodes[0]?`<span class="tag">${esc(m.studios.nodes[0].name)}</span>`:'')}</div>
+    <div class="tags">${m.genres.map(g=>`<span class="tag" style="color:var(--p)">${gen(g)}</span>`).join('')}</div>
+    <p class="desc" style="white-space:pre-line">${esc(desc)}</p>
+    <a class="btn" href="#/watch/${m.id}/${localStorage.getItem('ar_ep_'+m.id)||1}" style="margin-inline-end:8px">▶ شاهد الآن</a><button class="btn alt" id="fb">${fav?'💜 في المفضلة':'🤍 أضف للمفضلة'}</button>
+  </div></div>
+  ${m.trailer&&m.trailer.site==='youtube'?`<h2>الإعلان الرسمي</h2><div class="pl"><iframe src="https://www.youtube-nocookie.com/embed/${esc(m.trailer.id)}" allowfullscreen loading="lazy"></iframe></div>`:''}`;
+  $('#fb').onclick=()=>{favs.toggle({id:m.id,title:m.title,coverImage:m.coverImage,averageScore:m.averageScore,episodes:m.episodes,format:m.format});detail(id)};
+}
+
+const W={si:0,lang:'sub'};
+const CFG=()=>[
+  { name: "سيرفر 1", type: "iframe", url: "https://vidsrc.xyz/embed/anime?anilist={id}&episode={ep}" },
+  { name: "سيرفر 2", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/{id}/{ep}" }
+];
+async function watch(id,ep){
+  loading();
+  const m=(await gql(`query($id:Int){Media(id:$id,type:ANIME){id title{romaji english} episodes nextAiringEpisode{episode}}}`,{id:+id})).Media;
+  const total=m.episodes||(m.nextAiringEpisode?m.nextAiringEpisode.episode-1:0)||12;
+  ep=Math.min(Math.max(+ep||1,1),total);
+  try{localStorage.setItem('ar_ep_'+id,ep)}catch(e){}
+  const S=CFG();if(W.si>=S.length)W.si=0;
+  app.innerHTML=`<a href="#/anime/${id}" class="desc">← ${esc(ttl(m))}</a>
+  <h2 style="margin-top:8px">الحلقة ${ep} من ${total}</h2>
+  <div class="pl" id="pl"></div>
+  <div class="sv" id="sv"></div>
+  <div class="ext"><a class="ep" style="padding:9px 16px;${ep<=1?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep-1}">السابقة</a><a class="ep" style="padding:9px 16px;${ep>=total?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep+1}">التالية</a></div>
+  <h2>الحلقات</h2><div class="eps">${Array.from({length:total},(_,i)=>`<a class="ep ${i+1===ep?'on':''}" href="#/watch/${id}/${i+1}">${i+1}</a>`).join('')}</div>`;
+  const play=()=>{
+    const sv=$('#sv'),pl=$('#pl');
+    if(!S.length){pl.style.paddingBottom='0';pl.innerHTML='<div class="msg">ما فيه سيرفرات.</div>';sv.innerHTML='';return}
+    const s=S[W.si],both=(s.langs||[]).includes('sub')&&(s.langs||[]).includes('dub');
+    if(!both)W.lang='sub';
+    sv.innerHTML=S.map((x,i)=>`<button data-i="${i}" class="${i===W.si?'on':''}">${esc(x.name)}</button>`).join('')
+      +(both?`<button data-l="sub" class="${W.lang==='sub'?'on':''}">مترجم</button><button data-l="dub" class="${W.lang==='dub'?'on':''}">مدبلج</button>`:'');
+    const url=esc(String(s.url).replace(/\{id\}/g,id).replace(/\{ep\}/g,ep).replace(/\{lang\}/g,W.lang));
+    pl.style.paddingBottom='';
+    pl.innerHTML=s.type==='video'?`<video controls playsinline src="${url}" style="position:absolute;inset:0;width:100%;height:100%"></video>`:`<iframe src="${url}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+    sv.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.i!==undefined)W.si=+b.dataset.i;if(b.dataset.l)W.lang=b.dataset.l;play()});
+  };
+  play();
+}
+
+function favPage(){
+  const l=favs.get();
+  app.innerHTML=`<h2>💜 المفضلة</h2>`+(l.length?`<div class="grid">${l.map(card).join('')}</div>`:'<div class="msg">ما أضفت أي أنمي للمفضلة بعد.</div>');
+}
+
+async function route(){
+  const h=location.hash||'#/',p=h.slice(2).split('/');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(p[0]||'home')));
+  window.scrollTo(0,0);
+  try{
+    if(p[0]==='watch')await watch(p[1],p[2]||localStorage.getItem('ar_ep_'+p[1])||1);
+    else if(p[0]==='anime')await detail(p[1]);
+    else if(p[0]==='browse')browse('');
+    else if(p[0]==='search')browse(decodeURIComponent(p[1]||''));
+    else if(p[0]==='favs')favPage();
+    else await home();
+  }catch(e){fail()}
+}
+$('#sf').onsubmit=e=>{e.preventDefault();const v=$('#q').value.trim();if(v)location.hash='#/search/'+encodeURIComponent(v)};
+addEventListener('hashchange',route);route();
+</script>
+</body>
+</html>
