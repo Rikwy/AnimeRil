@@ -150,30 +150,22 @@ async function detail(id){
     <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
       <a class="btn" href="#/watch/${m.id}/${localStorage.getItem('ar_ep_'+m.id)||1}" style="margin:0">▶ شاهد الآن</a>
       <button class="btn alt" id="fb" style="margin:0">${fav?'💜 في المفضلة':'🤍 أضف للمفضلة'}</button>
-      <button class="btn alt" id="shareBtn" style="margin:0">🔗 مشاركة الأنمي</button>
     </div>
-  </div></div>
-  ${m.trailer&&m.trailer.site==='youtube'?`<h2>الإعلان الرسمي</h2><div class="pl"><iframe src="https://www.youtube-nocookie.com/embed/${esc(m.trailer.id)}" allowfullscreen loading="lazy"></iframe></div>`:''}`;
-  
+  </div></div>`;
   $('#fb').onclick=()=>{favs.toggle({id:m.id,title:m.title,coverImage:m.coverImage,averageScore:m.averageScore,episodes:m.episodes,format:m.format});detail(id)};
-  $('#shareBtn').onclick=()=>{
-    navigator.clipboard.writeText(window.location.href);
-    alert('تم نسخ رابط الأنمي بنجاح! 📋');
-  };
 }
 
 const W={si:0};
-// روابط سيرفرات بديلة مستقرة تدعم معرفات الأنمي
+// سيرفرات إمبيد نظيفة ومخصصة للأنمي عبر معرفات AniList الصحيحة
 const CFG=()=>[
-  { name: "سيرفر البث الرئيسي", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
-  { name: "سيرفر البث الاحتياطي", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/${id}/${ep}" },
-  { name: "سيرفر مباشر (Multi)", type: "iframe", url: "https://multiembed.mov/?video_id=${id}&tmdb=1&ep=${ep}" }
+  { name: "سيرفر الأنمي الأساسي", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
+  { name: "سيرفر البث البديل", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/${id}/${ep}" }
 ];
 
 async function watch(id,ep){
   loading();
-  const m=(await gql(`query($id:Int){Media(id:$id,type:ANIME){id title{romaji english} episodes nextAiringEpisode{episode}}}`,{id:+id})).Media;
-  const total=m.episodes||(m.nextAiringEpisode?m.nextAiringEpisode.episode-1:0)||12;
+  const m=(await gql(`query($id:Int){Media(id:$id,type:ANIME){id title{romaji english} episodes}}`,{id:+id})).Media;
+  const total=m.episodes||12;
   ep=Math.min(Math.max(+ep||1,1),total);
   try{localStorage.setItem('ar_ep_'+id,ep)}catch(e){}
   const S=CFG();if(W.si>=S.length)W.si=0;
@@ -181,7 +173,6 @@ async function watch(id,ep){
   app.innerHTML=`<a href="#/anime/${id}" class="desc">← العودة لتفاصيل ${esc(ttl(m))}</a>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:10px;">
     <h2>الحلقة ${ep} من ${total}</h2>
-    <button class="btn alt" id="copyEp" style="padding:6px 12px;font-size:12px;margin:0">📋 نسخ رابط الحلقة</button>
   </div>
   <div class="pl" id="pl"></div>
   <div class="sv" id="sv"></div>
@@ -191,11 +182,6 @@ async function watch(id,ep){
   </div>
   <h2>اختر الحلقة المطلوبة:</h2>
   <div class="eps">${Array.from({length:total},(_,i)=>`<a class="ep ${i+1===ep?'on':''}" href="#/watch/${id}/${i+1}">${i+1}</a>`).join('')}</div>`;
-  
-  $('#copyEp').onclick=()=>{
-    navigator.clipboard.writeText(window.location.href);
-    alert('تم نسخ رابط الحلقة الحالية بنجاح! 🚀');
-  };
 
   const play=()=>{
     const sv=$('#sv'),pl=$('#pl');
@@ -214,7 +200,7 @@ async function watch(id,ep){
 
 function favPage(){
   const l=favs.get();
-  app.innerHTML=`<h2>💜 المفضلة</h2>`+(l.length?`<div class="grid">${l.map(card).join('')}</div>`:'<div class="msg">ما أضفت أي أنمي للمفضلة بعد. ابدأ بإضافة أنمياتك المفضلة!</div>');
+  app.innerHTML=`<h2>💜 المفضلة</h2>`+(l.length?`<div class="grid">${l.map(card).join('')}</div>`:'<div class="msg">ما أضفت أي أنمي للمفضلة بعد.</div>');
 }
 
 async function route(){
