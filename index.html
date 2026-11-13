@@ -11,22 +11,23 @@
 body{background:radial-gradient(900px 500px at 85% -10%,rgba(139,92,246,.25),transparent),radial-gradient(700px 400px at 0% 20%,rgba(6,182,212,.14),transparent),var(--bg);background-attachment:fixed;color:var(--t);font-family:Tajawal,Tahoma,sans-serif;min-height:100vh}
 a{color:inherit;text-decoration:none}
 button,input,select{font-family:inherit}
-header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 5%;background:rgba(8,11,20,.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--b);flex-wrap:wrap}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 5%;background:rgba(8,11,20,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--b);flex-wrap:wrap}
 .logo{font-weight:800;font-size:22px;background:linear-gradient(90deg,var(--p),var(--s));-webkit-background-clip:text;background-clip:text;color:transparent}
 nav{display:flex;gap:6px}
-nav a{padding:7px 13px;border-radius:10px;color:var(--m);font-size:14px}
+nav a{padding:7px 13px;border-radius:10px;color:var(--m);font-size:14px;transition:.2s}
 nav a.on,nav a:hover{background:var(--g);color:var(--t)}
 .sb{flex:1;min-width:180px;display:flex}
-.sb input{width:100%;background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 14px;border-radius:12px;outline:none;font-size:14px}
+.sb input{width:100%;background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 14px;border-radius:12px;outline:none;font-size:14px;transition:.2s}
 .sb input:focus{border-color:var(--p)}
 main{padding:20px 5% 60px;max-width:1300px;margin:auto}
 h2{font-size:19px;margin:26px 0 12px}
-.hero{position:relative;border-radius:20px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;background:var(--bg2) center/cover;border:1px solid var(--b)}
-.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg) 5%,rgba(8,11,20,.35) 70%)}
-.hero>div{position:relative;z-index:1;padding:22px;max-width:620px}
+.hero{position:relative;border-radius:20px;overflow:hidden;min-height:320px;display:flex;align-items:flex-end;background:var(--bg2) center/cover;border:1px solid var(--b)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg) 5%,rgba(8,11,20,.4) 70%)}
+.hero>div{position:relative;z-index:1;padding:24px;max-width:620px}
 .hero h1{font-size:28px;margin-bottom:8px}
 .hero p{color:var(--m);font-size:14px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--p),var(--s));border:0;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:14px;font-size:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--p),var(--s));border:0;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:14px;font-size:14px;transition:.2s}
+.btn:hover{opacity:.9;transform:translateY(-2px)}
 .btn.alt{background:var(--g);border:1px solid var(--b)}
 .row{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
@@ -39,7 +40,7 @@ h2{font-size:19px;margin:26px 0 12px}
 .card .i span{color:var(--m);font-size:12px}
 .sc{position:absolute;top:8px;left:8px;background:rgba(8,11,20,.8);backdrop-filter:blur(6px);padding:2px 8px;border-radius:8px;font-size:12px;color:#FACC15}
 .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-select{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 12px;border-radius:10px}
+select{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 12px;border-radius:10px;outline:none}
 select option{background:var(--bg2)}
 .det{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:10px}
 .det .cv{width:100%;border-radius:16px;border:1px solid var(--b)}
@@ -47,18 +48,16 @@ select option{background:var(--bg2)}
 .tags{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .tag{background:var(--g);border:1px solid var(--b);padding:4px 12px;border-radius:20px;font-size:13px;color:var(--s)}
 .desc{color:var(--m);line-height:1.9;font-size:14px}
-.pl{position:relative;padding-bottom:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px}
+.pl{position:relative;padding-bottom:56.25%;border-radius:16px;overflow:hidden;background:#000;margin-top:10px;border:1px solid var(--b)}
 .pl iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.glass{background:var(--g);border:1px solid var(--b);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
-.ext{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.ext a{background:var(--g);border:1px solid var(--b);padding:8px 14px;border-radius:10px;font-size:13px}
-.ext a:hover{border-color:var(--s)}
+.ext{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .msg{text-align:center;color:var(--m);padding:40px}
-.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:260px;overflow-y:auto}
-.ep{background:var(--g);border:1px solid var(--b);color:var(--t);padding:9px 0;border-radius:10px;text-align:center;font-size:13px;cursor:pointer}
-.ep:hover{border-color:var(--s)}.ep.on{background:linear-gradient(90deg,var(--p),var(--s));border-color:transparent;font-weight:700}
-.sv{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.sv button{background:var(--g);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px}
+.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(55px,1fr));gap:8px;max-height:280px;overflow-y:auto;padding:4px}
+.ep{background:var(--g);border:1px solid var(--b);color:var(--t);padding:10px 0;border-radius:10px;text-align:center;font-size:13px;cursor:pointer;transition:.2s}
+.ep:hover{border-color:var(--s)}
+.ep.on{background:linear-gradient(90deg,var(--p),var(--s));border-color:transparent;font-weight:700}
+.sv{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.sv button{background:var(--g);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;transition:.2s}
 .sv button.on{background:var(--p);border-color:var(--p);font-weight:700}
 @media(max-width:640px){.det{grid-template-columns:1fr}.det .cv{max-width:180px}.hero h1{font-size:22px}}
 </style>
@@ -149,18 +148,27 @@ async function detail(id){
     <div class="tags"><span class="tag">★ ${m.averageScore?(m.averageScore/10).toFixed(1):'—'}</span><span class="tag">${ST[m.status]||m.status}</span>${m.episodes?`<span class="tag">${m.episodes} حلقة</span>`:''}${m.duration?`<span class="tag">${m.duration} د/حلقة</span>`:''}${m.seasonYear?`<span class="tag">${m.seasonYear}</span>`:''}${(m.studios.nodes[0]?`<span class="tag">${esc(m.studios.nodes[0].name)}</span>`:'')}</div>
     <div class="tags">${m.genres.map(g=>`<span class="tag" style="color:var(--p)">${gen(g)}</span>`).join('')}</div>
     <p class="desc" style="white-space:pre-line">${esc(desc)}</p>
-    <a class="btn" href="#/watch/${m.id}/${localStorage.getItem('ar_ep_'+m.id)||1}" style="margin-inline-end:8px">▶ شاهد الآن</a><button class="btn alt" id="fb">${fav?'💜 في المفضلة':'🤍 أضف للمفضلة'}</button>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+      <a class="btn" href="#/watch/${m.id}/${localStorage.getItem('ar_ep_'+m.id)||1}" style="margin:0">▶ شاهد الآن</a>
+      <button class="btn alt" id="fb" style="margin:0">${fav?'💜 في المفضلة':'🤍 أضف للمفضلة'}</button>
+      <button class="btn alt" id="shareBtn" style="margin:0">🔗 مشاركة الأنمي</button>
+    </div>
   </div></div>
   ${m.trailer&&m.trailer.site==='youtube'?`<h2>الإعلان الرسمي</h2><div class="pl"><iframe src="https://www.youtube-nocookie.com/embed/${esc(m.trailer.id)}" allowfullscreen loading="lazy"></iframe></div>`:''}`;
+  
   $('#fb').onclick=()=>{favs.toggle({id:m.id,title:m.title,coverImage:m.coverImage,averageScore:m.averageScore,episodes:m.episodes,format:m.format});detail(id)};
+  $('#shareBtn').onclick=()=>{
+    navigator.clipboard.writeText(window.location.href);
+    alert('تم نسخ رابط الأنمي بنجاح! 📋');
+  };
 }
 
 const W={si:0};
-// تحديث سيرفرات بديلة مخصصة لعرض الأنمي عبر AniList ID مباشرة بشكل أدق
+// قائمة سيرفرات بديلة متعددة ومستقرة للمشاهدة
 const CFG=()=>[
-  { name: "سيرفر Megacloud (أنمي)", type: "iframe", url: "https://vidlink.pro/anime/${id}/${ep}" },
-  { name: "سيرفر AnimeStream", type: "iframe", url: "https://vidsrc.cc/v2/embed/anime/${id}/${ep}" },
-  { name: "سيرفر الاحتياطي", type: "iframe", url: "https://autoembed.cc/embed/anime/anilist/${id}/${ep}" }
+  { name: "سيرفر GogoAnime الأساسي", type: "iframe", url: "https://gogocdn.net/embed.html?content_id=${id}&episode=${ep}" },
+  { name: "سيرفر MultiEmbed الاحتياطي", type: "iframe", url: "https://multiembed.mov/?video_id=${id}&tmdb=1&ep=${ep}" },
+  { name: "سيرفر VidSrc المباشر", type: "iframe", url: "https://vidsrc.me/embed/anime?anilist=${id}&episode=${ep}" }
 ];
 
 async function watch(id,ep){
@@ -171,16 +179,28 @@ async function watch(id,ep){
   try{localStorage.setItem('ar_ep_'+id,ep)}catch(e){}
   const S=CFG();if(W.si>=S.length)W.si=0;
   
-  app.innerHTML=`<a href="#/anime/${id}" class="desc">← ${esc(ttl(m))}</a>
-  <h2 style="margin-top:8px">الحلقة ${ep} من ${total}</h2>
+  app.innerHTML=`<a href="#/anime/${id}" class="desc">← العودة لتفاصيل ${esc(ttl(m))}</a>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:10px;">
+    <h2>الحلقة ${ep} من ${total}</h2>
+    <button class="btn alt" id="copyEp" style="padding:6px 12px;font-size:12px;margin:0">📋 نسخ رابط الحلقة</button>
+  </div>
   <div class="pl" id="pl"></div>
   <div class="sv" id="sv"></div>
-  <div class="ext"><a class="ep" style="padding:9px 16px;${ep<=1?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep-1}">السابقة</a><a class="ep" style="padding:9px 16px;${ep>=total?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep+1}">التالية</a></div>
-  <h2>الحلقات</h2><div class="eps">${Array.from({length:total},(_,i)=>`<a class="ep ${i+1===ep?'on':''}" href="#/watch/${id}/${i+1}">${i+1}</a>`).join('')}</div>`;
+  <div class="ext">
+    <a class="ep" style="flex:1;padding:10px;${ep<=1?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep-1}">← الحلقة السابقة</a>
+    <a class="ep" style="flex:1;padding:10px;${ep>=total?'opacity:.4;pointer-events:none':''}" href="#/watch/${id}/${ep+1}">الحلقة التالية →</a>
+  </div>
+  <h2>اختر الحلقة المطلوبة:</h2>
+  <div class="eps">${Array.from({length:total},(_,i)=>`<a class="ep ${i+1===ep?'on':''}" href="#/watch/${id}/${i+1}">${i+1}</a>`).join('')}</div>`;
   
+  $('#copyEp').onclick=()=>{
+    navigator.clipboard.writeText(window.location.href);
+    alert('تم نسخ رابط الحلقة الحالية بنجاح! 🚀');
+  };
+
   const play=()=>{
     const sv=$('#sv'),pl=$('#pl');
-    if(!S.length){pl.style.paddingBottom='0';pl.innerHTML='<div class="msg">ما فيه سيرفرات.</div>';sv.innerHTML='';return}
+    if(!S.length){pl.style.paddingBottom='0';pl.innerHTML='<div class="msg">ما فيه سيرفرات متاحة.</div>';sv.innerHTML='';return}
     const s=S[W.si];
     sv.innerHTML=S.map((x,i)=>`<button data-i="${i}" class="${i===W.si?'on':''}">${esc(x.name)}</button>`).join('');
     
@@ -195,7 +215,7 @@ async function watch(id,ep){
 
 function favPage(){
   const l=favs.get();
-  app.innerHTML=`<h2>💜 المفضلة</h2>`+(l.length?`<div class="grid">${l.map(card).join('')}</div>`:'<div class="msg">ما أضفت أي أنمي للمفضلة بعد.</div>');
+  app.innerHTML=`<h2>💜 المفضلة</h2>`+(l.length?`<div class="grid">${l.map(card).join('')}</div>`:'<div class="msg">ما أضفت أي أنمي للمفضلة بعد. ابدأ بإضافة أنمياتك المفضلة!</div>');
 }
 
 async function route(){
