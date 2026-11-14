@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeRil - منصة الأنمي</title>
+    <title>AnimeRil - منصة الأنمي الاحترافية</title>
     <style>
         :root {
-            --bg-color: #0f1620;
-            --card-bg: #182230;
-            --accent-color: #4f7cff;
-            --text-color: #e8edf3;
-            --text-secondary: #9fb0c4;
+            --bg-color: #0b0f17;
+            --card-bg: #131c2b;
+            --card-hover: #1d2a3e;
+            --accent-color: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --text-color: #f3f4f6;
+            --text-secondary: #9ca3af;
         }
         body {
             background-color: var(--bg-color);
@@ -23,91 +25,158 @@
             min-height: 100vh;
         }
         header {
-            background-color: var(--card-bg);
-            padding: 20px;
+            background: linear-gradient(to bottom, #131c2b, var(--bg-color));
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 1px solid #2c3a4d;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         header h1 {
             margin: 0;
-            color: var(--accent-color);
-            font-size: 24px;
+            color: #818cf8;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 0 20px var(--accent-glow);
         }
         main {
             flex: 1;
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px 20px;
             width: 100%;
             box-sizing: border-box;
         }
         .search-box {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 40px;
             justify-content: center;
         }
         input[type="text"] {
             width: 100%;
-            max-width: 500px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #2c3a4d;
+            max-width: 550px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid #1f293d;
             background-color: var(--card-bg);
             color: var(--text-color);
             font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
         button {
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 8px;
-            background-color: var(--accent-color);
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: white;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
         button:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--accent-color);
+            padding-right: 12px;
+            color: #f9fafb;
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
         }
         .card {
             background-color: var(--card-bg);
-            border-radius: 10px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.04);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
         }
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
+            background-color: var(--card-hover);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15);
+        }
+        .card-img-container {
+            position: relative;
+            width: 100%;
+            height: 270px;
+            overflow: hidden;
         }
         .card img {
             width: 100%;
-            height: 250px;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .card:hover img {
+            transform: scale(1.08);
+        }
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(11, 15, 23, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         .card-body {
-            padding: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
         }
         .card-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 0 0 8px 0;
-            white-space: nowrap;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            color: #f3f4f6;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
+        }
+        .card-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
         }
         footer {
             text-align: center;
-            padding: 20px;
+            padding: 25px;
             background-color: var(--card-bg);
             color: var(--text-secondary);
             font-size: 13px;
-            border-top: 1px solid #2c3a4d;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 40px;
         }
     </style>
 </head>
@@ -115,18 +184,18 @@
 
     <header>
         <h1>AnimeRil 🎌</h1>
-        <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 14px;">منصتك المفضلة لمشاهدة وتتبع الأنمي</p>
+        <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 14px;">منصتك التفاعلية لمشاهدة وتتبع الأنمي بجودة عالية</p>
     </header>
 
     <main>
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن أنمي...">
+            <input type="text" id="searchInput" placeholder="ابحث عن أنمي (مثال: One Piece, Naruto)..." onkeypress="if(event.key === 'Enter') searchAnime()">
             <button onclick="searchAnime()">بحث</button>
         </div>
 
-        <h3 style="border-right: 4px solid var(--accent-color); padding-right: 10px;">آخر الحلقات والأنميات المضافة</h3>
+        <div class="section-title">آخر الحلقات والأنميات الرائجة</div>
         <div class="grid" id="animeGrid">
-            <!-- سيتم تعبئة الأنميات تلقائياً عبر الجافاسكريبت -->
+            <!-- يتم تحميل الأنميات هنا -->
         </div>
     </main>
 
@@ -135,27 +204,11 @@
     </footer>
 
     <script>
-        // جلب الأنميات تلقائياً عند فتح الصفحة من السيرفر
         async function loadHomeAnime() {
             try {
                 const res = await fetch('/api/home/recently-released');
                 const data = await res.json();
-                const grid = document.getElementById('animeGrid');
-                grid.innerHTML = '';
-
-                const items = data.anilist || [];
-                items.forEach(anime => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <img src="${anime.image}" alt="${anime.title}">
-                        <div class="card-body">
-                            <h4 class="card-title">${anime.title}</h4>
-                            <span style="font-size: 12px; color: var(--text-secondary);">⭐ ${anime.score / 10} | ${anime.year || ''}</span>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+                renderAnimeList(data.anilist || []);
             } catch (err) {
                 console.error('Error loading home feed:', err);
             }
@@ -163,38 +216,57 @@
 
         async function searchAnime() {
             const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
+            const grid = document.getElementById('animeGrid');
+            
+            if (!query) {
+                loadHomeAnime();
+                return;
+            }
             
             try {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">جاري البحث...</p>';
                 const res = await fetch(`/api/anime/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                const grid = document.getElementById('animeGrid');
-                grid.innerHTML = '';
-
-                const items = data.results || [];
-                if (items.length === 0) {
-                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">لم يتم العثور على نتائج</p>';
-                    return;
-                }
-
-                items.forEach(anime => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <img src="${anime.image}" alt="${anime.title}">
-                        <div class="card-body">
-                            <h4 class="card-title">${anime.title}</h4>
-                            <span style="font-size: 12px; color: var(--text-secondary);">⭐ ${anime.score / 10}</span>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+                renderAnimeList(data.results || []);
             } catch (err) {
                 console.error('Error searching:', err);
             }
         }
 
-        // تشغيل الدالة عند تحميل الصفحة
+        function renderAnimeList(items) {
+            const grid = document.getElementById('animeGrid');
+            grid.innerHTML = '';
+
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">لم يتم العثور على نتائج مطابقة</p>';
+                return;
+            }
+
+            items.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                // تفاعل النقر على الكرت (يمكنك توجيهه لصفحة العرض أو تفاصيل الأنمي)
+                card.onclick = () => {
+                    alert(`أنت اخترت أنمي: ${anime.title}\n(قريباً سيتم نقلك لصفحة المشاهدة الخاصة به!)`);
+                };
+
+                card.innerHTML = `
+                    <div class="card-img-container">
+                        <div class="badge">⭐ ${anime.score ? (anime.score / 10).toFixed(1) : 'N/A'}</div>
+                        <img src="${anime.image}" alt="${anime.title}" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title" title="${anime.title}">${anime.title}</h4>
+                        <div class="card-info">
+                            <span>${anime.format || 'TV'}</span>
+                            <span>${anime.year || 'مستمر'}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
         loadHomeAnime();
     </script>
 </body>
