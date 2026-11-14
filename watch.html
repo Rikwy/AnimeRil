@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeRil - Watch</title>
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --card-bg: #131c2b;
+            --accent-color: #e50914;
+            --text-color: #f3f4f6;
+            --text-secondary: #9ca3af;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: rgba(11, 15, 23, 0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-brand { font-size: 22px; font-weight: 800; color: #fff; text-decoration: none; }
+        .nav-brand span { color: var(--accent-color); }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .anime-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .anime-poster {
+            width: 220px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .anime-info {
+            flex: 1;
+        }
+        .anime-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+        }
+        .anime-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .episodes-section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .episodes-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        .ep-btn {
+            background: #182230;
+            border: 1px solid #2a3b52;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .ep-btn:hover, .ep-btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .player-container {
+            margin-top: 30px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="nav-brand">Anime<span>Ril</span></a>
+    </nav>
+
+    <div class="container">
+        <div class="anime-header" id="animeHeader">
+            <p style="color: var(--text-secondary);">Loading anime details...</p>
+        </div>
+
+        <div class="player-container" id="playerContainer">
+            <p>Select an episode to start watching</p>
+        </div>
+
+        <div class="episodes-section" style="margin-top: 20px;">
+            <h3 style="margin-top:0; color:#fff;">Episodes</h3>
+            <div class="episodes-grid" id="episodesGrid">
+                <p style="color: var(--text-secondary);">Loading episodes...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const anilistId = urlParams.get('anilistId');
+
+        async function loadWatchPage() {
+            if (!anilistId) {
+                document.getElementById('animeHeader').innerHTML = '<p>Error: No anime ID provided.</p>';
+                return;
+            }
+
+            try {
+                // جلب تفاصيل الأنمي من بحث أو عبر محرك البحث المؤقت (أو بيانات العرض)
+                const res = await fetch(`/api/anime/search?q=${anilistId}`);
+                const data = await res.json();
+                const anime = (data.results || []).find(a => String(a.id) === String(anilistId)) || (data.results || [])[0];
+
+                if (anime) {
+                    document.getElementById('animeHeader').innerHTML = `
+                        <img src="${anime.image}" class="anime-poster" alt="${anime.title}">
+                        <div class="anime-info">
+                            <h1 class="anime-title">${anime.title}</h1>
+                            <p class="anime-desc">${anime.description || 'No description.'}</p>
+                            <p style="color: #fbbf24; font-weight: bold;">⭐ Score: ${anime.score ? (anime.score/10).toFixed(1) : 'N/A'} &nbsp;|&nbsp; 📺 Format: ${anime.format || 'TV'}</p>
+                        </div>
+                    `;
+                }
+
+                // جلب الحلقات عبر سيرفر Animex
+                const epRes = await fetch(`/api/animex/servers?anilistId=${anilistId}&episode=1`);
+                const epData = await epRes.json();
+                
+                const grid = document.getElementById('episodesGrid');
+                grid.innerHTML = '';
+
+                // افتراضي توليد أزرار حلقات تجريبية لو الخدمة جاهزة
+                const totalEpisodes = anime?.episodes || 12;
+                for (let i = 1; i <= totalEpisodes; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'ep-btn';
+                    btn.innerText = `Ep ${i}`;
+                    btn.onclick = () => loadEpisode(i);
+                    grid.appendChild(btn);
+                }
+
+            } catch (err) {
+                console.error('Error loading watch page:', err);
+                document.getElementById('episodesGrid').innerHTML = '<p style="color:red;">Failed to load episodes.</p>';
+            }
+        }
+
+        async function loadEpisode(epNum) {
+            const container = document.getElementById('playerContainer');
+            container.innerHTML = `<p>Loading episode ${epNum}...</p>`;
+            try {
+                const res = await fetch(`/api/animex/stream?anilistId=${anilistId}&episode=${epNum}&type=sub`);
+                const data = await res.json();
+                if (data.m3u8Url) {
+                    container.innerHTML = `<video controls autoplay src="${data.m3u8Url}"></video>`;
+                } else {
+                    container.innerHTML = `<p style="color:red;">Stream source not available for this episode.</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p style="color:red;">Error loading stream.</p>`;
+            }
+        }
+
+        loadWatchPage();
+    </script>
+</body>
+</html>
