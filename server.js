@@ -1,20 +1,17 @@
 /* ==========================================================================
-   AnimeRil - Advanced Backend Server (Standalone Clean Version)
+   AnimeRil - Advanced Backend Server (Complete Version)
    ========================================================================== */
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
 const { URL } = require('url');
-const zlib = require('zlib');
+
+const animexScraper = require('./animex');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, 'public');
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
-
 const ANILIST_GRAPHQL = 'https://graphql.anilist.co';
 
-// Rate limiting config
 const RATE_LIMIT_WINDOW = 60_000;
 const rateLimitStore = new Map();
 
@@ -141,13 +138,37 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ results: media.map(formatAnilist) }));
     }
 
-    // Static files serving
+    // API: Animex Servers
+    if (reqUrl.pathname === '/api/animex/servers') {
+      const anilistId = reqUrl.searchParams.get('anilistId');
+      const episode = parseInt(reqUrl.searchParams.get('episode') || '1', 10);
+      const data = await animexScraper.animexServers(anilistId, episode);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(data));
+    }
+
+    // API: Animex Stream
+    if (reqUrl.pathname === '/api/animex/stream') {
+      const anilistId = reqUrl.searchParams.get('anilistId');
+      const episode = parseInt(reqUrl.searchParams.get('episode') || '1', 10);
+      const type = reqUrl.searchParams.get('type') || 'sub';
+      const provider = reqUrl.searchParams.get('providerId') || '';
+      
+      const data = await animexScraper.animexSources(anilistId, episode, type, provider);
+      const src = (data.sources || []).find((s) => /\.m3u8($|\?)/i.test(s.url || ''));
+      const m3u8Url = (src && !data.error) ? src.url : null;
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ...data, m3u8Url }));
+    }
+
+    // Static files serving (handles index.html, watch.html, etc.)
     let pathname = reqUrl.pathname;
     if (pathname === '/') pathname = '/index.html';
     const filePath = path.join(ROOT, decodeURIComponent(pathname));
     const data = await fs.readFile(filePath);
     res.writeHead(200, { 'Content-Type': getMimeType(filePath) });
-    res.end(data);
+    return res.end(data);
 
   } catch (err) {
     res.writeHead(404, { 'Content-Type': 'text/html' });
