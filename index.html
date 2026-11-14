@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeRil - منصة الأنمي الاحترافية</title>
+    <title>AnimeRil - Watch Anime Online</title>
     <style>
         :root {
             --bg-color: #0b0f17;
             --card-bg: #131c2b;
-            --card-hover: #1d2a3e;
-            --accent-color: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-color: #e50914;
+            --accent-glow: rgba(229, 9, 20, 0.4);
             --text-color: #f3f4f6;
             --text-secondary: #9ca3af;
         }
@@ -20,246 +19,266 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
         }
-        header {
-            background: linear-gradient(to bottom, #131c2b, var(--bg-color));
-            padding: 30px 20px;
-            text-align: center;
+        /* Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: rgba(11, 15, 23, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        header h1 {
-            margin: 0;
-            color: #818cf8;
-            font-size: 28px;
+        .nav-brand {
+            font-size: 22px;
             font-weight: 800;
-            letter-spacing: 1px;
-            text-shadow: 0 0 20px var(--accent-glow);
-        }
-        main {
-            flex: 1;
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 30px 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .search-box {
+            color: #ffffff;
             display: flex;
-            gap: 12px;
-            margin-bottom: 40px;
-            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
-        input[type="text"] {
-            width: 100%;
-            max-width: 550px;
-            padding: 14px 20px;
-            border-radius: 12px;
-            border: 1px solid #1f293d;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
+        .nav-brand span { color: var(--accent-color); }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
         }
-        input[type="text"]:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-        button {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            font-size: 16px;
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 12px var(--accent-glow);
+            transition: color 0.2s;
         }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--accent-glow);
+        .nav-links a:hover { color: #fff; }
+        .search-container {
+            position: relative;
+        }
+        .search-container input {
+            background: #182230;
+            border: 1px solid #2a3b52;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+            width: 200px;
+            transition: width 0.3s;
+        }
+        .search-container input:focus { width: 260px; border-color: var(--accent-color); }
+
+        /* Hero Banner */
+        .hero {
+            position: relative;
+            height: 450px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            padding: 40px;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, var(--bg-color) 0%, rgba(11,15,23,0.4) 60%, rgba(11,15,23,0.8) 100%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+        .hero-title {
+            font-size: 36px;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        .hero-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .play-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.2s;
+            text-decoration: none;
+        }
+        .play-btn:hover { background-color: #f40612; transform: scale(1.05); }
+
+        /* Content Grid */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px 40px 30px;
         }
         .section-title {
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 20px;
-            border-right: 4px solid var(--accent-color);
-            padding-right: 12px;
-            color: #f9fafb;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
         }
         .card {
             background-color: var(--card-bg);
-            border-radius: 14px;
+            border-radius: 10px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.04);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
+            transition: transform 0.25s, box-shadow 0.25s;
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
         .card:hover {
-            transform: translateY(-8px) scale(1.02);
-            background-color: var(--card-hover);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15);
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-        .card-img-container {
-            position: relative;
+        .card-img {
             width: 100%;
-            height: 270px;
-            overflow: hidden;
-        }
-        .card img {
-            width: 100%;
-            height: 100%;
+            height: 250px;
             object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-        .card:hover img {
-            transform: scale(1.08);
-        }
-        .badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(11, 15, 23, 0.75);
-            backdrop-filter: blur(8px);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #fbbf24;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
         .card-body {
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
+            padding: 12px;
         }
         .card-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            margin: 0;
-            color: #f3f4f6;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
+            margin: 0 0 6px 0;
+            white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
+            color: #fff;
         }
         .card-info {
             font-size: 12px;
             color: var(--text-secondary);
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-        }
-        footer {
-            text-align: center;
-            padding: 25px;
-            background-color: var(--card-bg);
-            color: var(--text-secondary);
-            font-size: 13px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            margin-top: 40px;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>AnimeRil 🎌</h1>
-        <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 14px;">منصتك التفاعلية لمشاهدة وتتبع الأنمي بجودة عالية</p>
-    </header>
-
-    <main>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن أنمي (مثال: One Piece, Naruto)..." onkeypress="if(event.key === 'Enter') searchAnime()">
-            <button onclick="searchAnime()">بحث</button>
+    <nav>
+        <div class="nav-brand">Anime<span>Ril</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="#" onclick="alert('Coming soon!')">Catalog</a>
+            <a href="#" onclick="alert('Coming soon!')">Schedule</a>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search anime..." onkeypress="if(event.key==='Enter') searchAnime()">
+            </div>
         </div>
+    </nav>
 
-        <div class="section-title">آخر الحلقات والأنميات الرائجة</div>
+    <!-- Hero Banner -->
+    <div class="hero" id="heroBanner" style="background-image: url('');">
+        <div class="hero-content">
+            <h1 class="hero-title" id="heroTitle">Loading...</h1>
+            <p class="hero-desc" id="heroDesc">Please wait while we fetch the latest anime highlights.</p>
+            <a href="#" id="heroLink" class="play-btn">▶ WATCH NOW</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">Trending Now</div>
         <div class="grid" id="animeGrid">
-            <!-- يتم تحميل الأنميات هنا -->
+            <!-- Anime Cards -->
         </div>
-    </main>
-
-    <footer>
-        <p>AnimeRil &copy; 2026 - جميع الحقوق محفوظة</p>
-    </footer>
+    </div>
 
     <script>
-        async function loadHomeAnime() {
+        async function loadHome() {
             try {
                 const res = await fetch('/api/home/recently-released');
                 const data = await res.json();
-                renderAnimeList(data.anilist || []);
+                const items = data.anilist || [];
+                
+                if (items.length > 0) {
+                    // تعيين أول أنمي كبانر رئيسي (Hero)
+                    const hero = items[0];
+                    document.getElementById('heroBanner').style.backgroundImage = `url('${hero.banner || hero.image}')`;
+                    document.getElementById('heroTitle').innerText = hero.title;
+                    document.getElementById('heroDesc').innerText = hero.description || 'No description available.';
+                    document.getElementById('heroLink').href = `/watch.html?anilistId=${hero.id}`;
+
+                    renderGrid(items);
+                }
             } catch (err) {
-                console.error('Error loading home feed:', err);
+                console.error('Error loading home:', err);
             }
         }
 
         async function searchAnime() {
             const query = document.getElementById('searchInput').value.trim();
             const grid = document.getElementById('animeGrid');
-            
             if (!query) {
-                loadHomeAnime();
+                loadHome();
                 return;
             }
-            
             try {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">جاري البحث...</p>';
+                grid.innerHTML = '<p style="color:#9ca3af">Searching...</p>';
                 const res = await fetch(`/api/anime/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                renderAnimeList(data.results || []);
+                renderGrid(data.results || []);
             } catch (err) {
-                console.error('Error searching:', err);
+                console.error('Search error:', err);
             }
         }
 
-        function renderAnimeList(items) {
+        function renderGrid(items) {
             const grid = document.getElementById('animeGrid');
             grid.innerHTML = '';
-
-            if (items.length === 0) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">لم يتم العثور على نتائج مطابقة</p>';
-                return;
-            }
-
             items.forEach(anime => {
-                const card = document.createElement('div');
+                const card = document.createElement('a');
+                // هنا ربطنا الضغط بحيث ينقلك مباشرة لصفحة العرض أو تفاصيل الأنمي بدون رسائل مزعجة
                 card.className = 'card';
-                // تفاعل النقر على الكرت (يمكنك توجيهه لصفحة العرض أو تفاصيل الأنمي)
-                card.onclick = () => {
-                    alert(`أنت اخترت أنمي: ${anime.title}\n(قريباً سيتم نقلك لصفحة المشاهدة الخاصة به!)`);
-                };
-
+                card.href = `/watch.html?anilistId=${anime.id}`;
+                
                 card.innerHTML = `
-                    <div class="card-img-container">
-                        <div class="badge">⭐ ${anime.score ? (anime.score / 10).toFixed(1) : 'N/A'}</div>
-                        <img src="${anime.image}" alt="${anime.title}" loading="lazy">
-                    </div>
+                    <img src="${anime.image}" alt="${anime.title}" class="card-img" loading="lazy">
                     <div class="card-body">
-                        <h4 class="card-title" title="${anime.title}">${anime.title}</h4>
+                        <div class="card-title">${anime.title}</div>
                         <div class="card-info">
                             <span>${anime.format || 'TV'}</span>
-                            <span>${anime.year || 'مستمر'}</span>
+                            <span>⭐ ${anime.score ? (anime.score/10).toFixed(1) : 'N/A'}</span>
                         </div>
                     </div>
                 `;
@@ -267,7 +286,7 @@
             });
         }
 
-        loadHomeAnime();
+        loadHome();
     </script>
 </body>
 </html>
