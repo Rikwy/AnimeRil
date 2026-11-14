@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AnimeRil - Advanced Backend Server (Complete Version)
+   AnimeRil - Advanced Backend Server (Root Directory Version)
    ========================================================================== */
 const http = require('http');
 const fs = require('fs/promises');
@@ -162,12 +162,20 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ ...data, m3u8Url }));
     }
 
-    // Static files serving (handles index.html, watch.html, etc.)
+    // Static files serving from ROOT directory
     let pathname = reqUrl.pathname;
     if (pathname === '/') pathname = '/index.html';
+    
     const filePath = path.join(ROOT, decodeURIComponent(pathname));
-    const data = await fs.readFile(filePath);
-    res.writeHead(200, { 'Content-Type': getMimeType(filePath) });
+    const resolvedPath = path.resolve(filePath);
+
+    if (!resolvedPath.startsWith(ROOT)) {
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      return res.end('Forbidden');
+    }
+
+    const data = await fs.readFile(resolvedPath);
+    res.writeHead(200, { 'Content-Type': getMimeType(resolvedPath) });
     return res.end(data);
 
   } catch (err) {
