@@ -1,87 +1,22 @@
 /* ==========================================================================
-   AnimeRil - Advanced Backend Server (Full Optimized Version)
+   AnimeRil - Advanced Backend Server (Standalone Clean Version)
    ========================================================================== */
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
 const { URL } = require('url');
 const zlib = require('zlib');
-const crypto = require('crypto');
 
-const animexScraper = require('./animex');
-
-// ========================
-// CONFIGURATION
-// ========================
 const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
 
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '';
-
-// Miruro scraping config
-const MIRURO_BASE = 'https://www.miruro.to';
-const MIRURO_PIPE_URL = `${MIRURO_BASE}/api/secure/pipe`;
 const ANILIST_GRAPHQL = 'https://graphql.anilist.co';
-const ANIMEX_GRAPHQL = 'https://graphql.animex.one';
-const MIRURO_HEADERS = {
-  'User-Agent': USER_AGENT,
-  'Referer': `${MIRURO_BASE}/`,
-  'Origin': MIRURO_BASE,
-  'Accept': '*/*',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'sec-fetch-site': 'same-origin',
-  'sec-fetch-mode': 'cors',
-  'sec-fetch-dest': 'empty',
-  'sec-ch-ua': '"Chromium";v="130", "Not A(Brand";v="24", "Google Chrome";v="130"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"',
-};
 
 // Rate limiting config
 const RATE_LIMIT_WINDOW = 60_000;
-const FREE_TIER_MODE = !!(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.FREE_TIER === '1');
-const RATE_LIMIT_MAX = FREE_TIER_MODE ? 60 : 120;
-
-// ========================
-// MIME TYPES
-// ========================
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'text/javascript',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.woff2': 'font/woff2',
-  '.woff': 'font/woff',
-  '.ttf': 'font/ttf',
-  '.mp4': 'video/mp4',
-  '.webm': 'video/webm',
-  '.xml': 'application/xml',
-  '.txt': 'text/plain',
-  '.map': 'application/json',
-};
-
-// ========================
-// RATE LIMITER
-// ========================
 const rateLimitStore = new Map();
-
-function pruneCache(map, maxEntries) {
-  if (!map || !(map instanceof Map) || map.size <= maxEntries) return;
-  const overflow = map.size - maxEntries;
-  for (const [key] of [...map.entries()].slice(0, overflow)) {
-    map.delete(key);
-  }
-}
 
 function rateLimit(ip) {
   const now = Date.now();
@@ -96,383 +31,29 @@ function rateLimit(ip) {
     return true;
   }
   entry.count++;
-  return entry.count <= RATE_LIMIT_MAX;
+  return entry.count <= 120;
 }
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitStore.entries()) {
-    if (now - entry.windowStart > RATE_LIMIT_WINDOW * 2) {
-      rateLimitStore.delete(ip);
-    }
-  }
-}, 300_000);
-
-// ========================
-// LOGGING
-// ========================
-function log(method, pathname, status, extra = '') {
-  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  const statusColor = status >= 200 && status < 300 ? '\x1b[32m' :
-                      status >= 300 && status < 400 ? '\x1b[36m' :
-                      status >= 400 && status < 500 ? '\x1b[33m' : '\x1b[31m';
-  console.log(`\x1b[90m${timestamp}\x1b[0m \x1b[35m${method.padEnd(6)}\x1b[0m ${statusColor}${status}\x1b[0m ${pathname.substring(0, 120)}` + (extra ? ` \x1b[90m${extra}\x1b[0m` : ''));
-}
-
-// ========================
-// HELPERS
-// ========================
 function getMimeType(filePath) {
-  return MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-}
-
-function isPrivateHost(hostname) {
-  const h = (hostname || '').toLowerCase().replace(/\.$/, '');
-  if (!h) return true;
-  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h === 'metadata.google.internal') return true;
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) {
-    const [a, b] = h.split('.').map(Number);
-    if (a === 0 || a === 10 || a === 127) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true;
-  }
-  return false;
-}
-
-function isAllowedProxyTarget(target) {
-  try {
-    const parsed = new URL(target);
-    return ['https:', 'http:'].includes(parsed.protocol) && !isPrivateHost(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
-const NO_COMPRESS_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.ico', '.mp3']);
-
-function shouldCompress(res, req, ext) {
-  if (ext && NO_COMPRESS_EXTS.has(ext)) return false;
-  const accept = req.headers['accept-encoding'] || '';
-  return accept.includes('gzip') && !res.headersSent && typeof res._compressed === 'undefined';
-}
-
-function applyCorsHeaders(res, req) {
-  const origin = req?.headers?.origin;
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Max-Age', '86400');
-}
-
-async function getRequestBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
-  });
-}
-
-function accessGranted(req, reqUrl) {
-  if (reqUrl.pathname === '/health' || reqUrl.pathname === '/api/health') return true;
-  if (reqUrl.searchParams.get('token') === ACCESS_TOKEN) return true;
-  if ((req.headers['authorization'] || '') === 'Bearer ' + ACCESS_TOKEN) return true;
-  const cookie = req.headers['cookie'] || '';
-  return cookie.split(';').some((c) => c.trim() === `access_token=${ACCESS_TOKEN}`);
-}
-
-const LOGIN_HTML = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AnimeRil - Sign in</title>
-<style>body{background:#0f1620;color:#e8edf3;font-family:Segoe UI,Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}form{background:#182230;padding:32px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);width:300px}input{width:100%;box-sizing:border-box;padding:12px;border-radius:8px;border:1px solid #2c3a4d;background:#0f1620;color:#fff;margin:8px 0 16px}button{width:100%;padding:12px;border:0;border-radius:8px;background:#4f7cff;color:#fff;font-size:15px;cursor:pointer}h1{font-size:18px;margin:0 0 4px}</style>
-</head><body><form method="post" action="/login">
-<h1>AnimeRil - Private access</h1><p style="color:#9fb0c4;font-size:13px;margin:0 0 12px">Enter the access token to continue.</p>
-<input type="password" name="token" placeholder="Access token" autofocus required/>
-<button type="submit">Sign in</button></form></body></html>`;
-
-// ========================
-// MIRURO & EXTRA SCRAPER FUNCTIONS
-// ========================
-function b64urlEncode(str) {
-  return Buffer.from(str, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function b64urlDecode(str) {
-  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
-  return Buffer.from(b64 + '='.repeat((4 - b64.length % 4) % 4), 'base64');
-}
-
-function translateId(encodedId) {
-  try {
-    const decoded = b64urlDecode(encodedId).toString('utf8');
-    return decoded.includes(':') ? decoded : encodedId;
-  } catch {
-    return encodedId;
-  }
-}
-
-function deepTranslateId(obj) {
-  if (Array.isArray(obj)) {
-    obj.forEach(deepTranslateId);
-  } else if (obj && typeof obj === 'object') {
-    for (const key of Object.keys(obj)) {
-      const value = obj[key];
-      if (key === 'id' && typeof value === 'string') {
-        obj[key] = translateId(value);
-      } else if (value && typeof value === 'object') {
-        deepTranslateId(value);
-      }
-    }
-  }
-  return obj;
-}
-
-const MIRURO_SIDECAR_URL = (process.env.MIRURO_SIDECAR_URL || 'http://127.0.0.1:8765').replace(/\/+$/, '');
-const MIRURO_PROXY_BASE = process.env.MIRURO_PROXY_BASE || 'https://s1.watami.win/';
-const MIRURO_OBF_KEY = Buffer.from(process.env.MIRURO_OBF_KEY || 'a54d389c18527d9fd3e7f0643e27edbe', 'hex');
-const MIRURO_PIPE_OBF_KEY = Buffer.from(process.env.MIRURO_PIPE_OBF_KEY || '71951034f8fbcf53d89db52ceb3dc22c', 'hex');
-const MIRURO_PROTOCOL_VERSION = process.env.MIRURO_PROTOCOL_VERSION || '0.2.0';
-
-function miruroDecodePipe(body, xObfuscated) {
-  if (!xObfuscated) return JSON.parse(body);
-  const compressed = b64urlDecode(body.trim());
-  let data = Buffer.from(compressed);
-  if (xObfuscated === '2') {
-    for (let i = 0; i < data.length; i++) {
-      data[i] ^= MIRURO_PIPE_OBF_KEY[i % MIRURO_PIPE_OBF_KEY.length];
-    }
-  }
-  const json = zlib.gunzipSync(data).toString('utf8');
-  return JSON.parse(json);
-}
-
-const miruroProtocolVersionCache = { value: MIRURO_PROTOCOL_VERSION, at: 0 };
-async function miruroProtocolVersion() {
-  if (Date.now() - miruroProtocolVersionCache.at < 10 * 60 * 1000) {
-    return miruroProtocolVersionCache.value;
-  }
-  try {
-    const sidecar = await fetch(`${MIRURO_SIDECAR_URL}/jwks`, { signal: AbortSignal.timeout(6000) });
-    const result = await sidecar.json();
-    const version = result && (result.version || (result.body && JSON.parse(result.body).version));
-    if (version) {
-      miruroProtocolVersionCache.value = version;
-      miruroProtocolVersionCache.at = Date.now();
-      return version;
-    }
-  } catch { /* keep default */ }
-  miruroProtocolVersionCache.at = Date.now();
-  return miruroProtocolVersionCache.value;
-}
-
-async function miruroPipeRequest(payload) {
-  const version = await miruroProtocolVersion();
-  const encoded = b64urlEncode(JSON.stringify({ ...payload, version: version || undefined }));
-
-  try {
-    const sidecar = await fetch(`${MIRURO_SIDECAR_URL}/pipe`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ e: encoded }),
-      signal: AbortSignal.timeout(18000),
-    });
-    const result = await sidecar.json();
-
-    if (result.status === 200 && result.body) {
-      return miruroDecodePipe(result.body, result.x_obfuscated);
-    }
-    if (result.status) {
-      const raw = String(result.body || result.error || '').trim();
-      const title = raw.match(/<title>([^<]+)<\/title>/i);
-      let clean = title ? title[1] : raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      if (!clean) clean = 'unknown error';
-      throw new Error(`Miruro pipe error (${result.status}): ${clean.slice(0, 140)}`);
-    }
-    throw new Error(`Miruro sidecar error: ${result.error || 'unknown'}`);
-  } catch (err) {
-    if (err.message.startsWith('Miruro pipe error') || err.message.startsWith('Miruro sidecar error')) {
-      throw err;
-    }
-  }
-
-  const response = await fetch(`${MIRURO_PIPE_URL}?e=${encoded}`, {
-    headers: MIRURO_HEADERS,
-    redirect: 'follow',
-    signal: AbortSignal.timeout(25000),
-  });
-
-  if (response.status !== 200) {
-    const body = await response.text().catch(() => '');
-    if (response.status === 403 || body.toLowerCase().includes('cloudflare')) {
-      throw new Error('Miruro pipe is blocked by Cloudflare (403). Needs the curl_cffi sidecar.');
-    }
-    throw new Error(`Miruro pipe error (${response.status}): ${body.slice(0, 160)}`);
-  }
-
-  return miruroDecodePipe(await response.text(), response.headers.get('x-obfuscated') || undefined);
-}
-
-function miruroObfuscate(str) {
-  const input = Buffer.from(str, 'utf8');
-  const out = Buffer.alloc(input.length);
-  for (let i = 0; i < input.length; i++) {
-    out[i] = input[i] ^ MIRURO_OBF_KEY[i % MIRURO_OBF_KEY.length];
-  }
-  return out.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function buildMiruroPlayableUrl(hlsUrl, referer) {
-  return MIRURO_PROXY_BASE + miruroObfuscate(hlsUrl) + '~' + miruroObfuscate(referer || 'https://kwik.cx/') + '/pl.m3u8';
-}
-
-function miruroEmbedOrigin(sources) {
-  const embed = (sources.streams || []).find((s) => s.type === 'embed' && s.url);
-  if (!embed) return 'https://kwik.cx/';
-  try {
-    const parsed = new URL(embed.url);
-    return `${parsed.origin}/`;
-  } catch {
-    return 'https://kwik.cx/';
-  }
-}
-
-const miruroEpisodesCache = new Map();
-const MIRURO_EPISODES_TTL = 15 * 60 * 1000;
-
-async function miruroFetchEpisodes(anilistId) {
-  const key = Number(anilistId);
-  if (miruroEpisodesCache.has(key)) return miruroEpisodesCache.get(key);
-  const data = await miruroPipeRequest({
-    path: 'episodes',
-    method: 'GET',
-    query: { anilistId: key },
-    body: null,
-  });
-  const result = deepTranslateId(data);
-  miruroEpisodesCache.set(key, result);
-  pruneCache(miruroEpisodesCache, 128);
-  setTimeout(() => miruroEpisodesCache.delete(key), MIRURO_EPISODES_TTL);
-  return result;
-}
-
-async function miruroFetchSources(anilistId, provider, category, episodeId) {
-  return miruroPipeRequest({
-    path: 'sources',
-    method: 'GET',
-    query: {
-      episodeId: b64urlEncode(episodeId),
-      provider,
-      category,
-      anilistId: Number(anilistId),
-    },
-    body: null,
-  });
-}
-
-// ========================
-// ANILIST & HELPER FUNCTIONS
-// ========================
-const anilistInfoCache = new Map();
-async function anilistMediaInfo(id) {
-  const key = Number(id);
-  if (anilistInfoCache.has(key)) return anilistInfoCache.get(key);
-  const gql = `query ($id: Int) {
-    Media(id: $id, type: ANIME) {
-      id idMal title { romaji english native } description coverImage { extraLarge large color }
-      bannerImage averageScore meanScore status format episodes duration genres synonyms
-      seasonYear studios { nodes { name isAnimationStudio } }
-      nextAiringEpisode { episode airingAt timeUntilAiring } externalLinks { site url type }
-    }
-  }`;
-  const response = await fetch(ANILIST_GRAPHQL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({ query: gql, variables: { id: Number(id) } }),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (response.status !== 200) return null;
-  const json = await response.json();
-  const media = json?.data?.Media || null;
-  if (media) {
-    anilistInfoCache.set(key, media);
-    setTimeout(() => anilistInfoCache.delete(key), 24 * 60 * 60 * 1000);
-  }
-  return media;
-}
-
-const anilistSearchCache = new Map();
-async function anilistSearchFull(queryTitle, perPage = 48) {
-  const cacheKey = `${perPage}:${queryTitle.toLowerCase().trim()}`;
-  if (anilistSearchCache.has(cacheKey)) return anilistSearchCache.get(cacheKey);
-  const gql = `query ($s: String, $perPage: Int) {
-    Page(perPage: $perPage) {
-      media(search: $s, type: ANIME, isAdult: false) {
-        id idMal title { romaji english native } coverImage { extraLarge large color }
-        bannerImage format episodes duration status seasonYear season averageScore meanScore
-        genres synonyms description nextAiringEpisode { episode airingAt timeUntilAiring }
-        startDate { year month day } studios { nodes { name isAnimationStudio } }
-      }
-    }
-  }`;
-  const response = await fetch(ANILIST_GRAPHQL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({ query: gql, variables: { s: queryTitle, perPage: Number(perPage) } }),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (response.status !== 200) throw new Error(`AniList search failed (${response.status})`);
-  const json = await response.json();
-  const media = (json?.data?.Page?.media) || [];
-  anilistSearchCache.set(cacheKey, media);
-  pruneCache(anilistSearchCache, 256);
-  return media;
-}
-
-function formatAnilistForHome(media) {
-  const title = media.title?.english || media.title?.romaji || media.title?.native || 'Unknown';
-  const image = media.coverImage?.extraLarge || media.coverImage?.large || '';
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + media.id.toString(36).substring(0, 5);
-
-  return {
-    id: media.id,
-    idMal: media.idMal,
-    slug,
-    title,
-    image,
-    banner: media.bannerImage || '',
-    format: media.format || 'TV',
-    episodes: media.episodes || 0,
-    status: media.status || 'RELEASING',
-    year: media.seasonYear || '',
-    score: media.averageScore || 0,
-    genres: media.genres || [],
-    description: media.description ? media.description.replace(/<[^>]+>/g, '').substring(0, 300) : '',
-    watchUrl: `/watch.html?anilistId=${media.id}`,
-    episodeUrl: `/watch.html?anilistId=${media.id}`,
+  const ext = path.extname(filePath).toLowerCase();
+  const types = {
+    '.html': 'text/html',
+    '.css': 'text/css',
+    '.js': 'text/javascript',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml'
   };
+  return types[ext] || 'application/octet-stream';
 }
 
-let anilistHomeCache = null;
-let anilistHomeCacheAt = 0;
 async function anilistHomeFeed() {
-  if (anilistHomeCache && Date.now() - anilistHomeCacheAt < 5 * 60 * 1000) {
-    return anilistHomeCache;
-  }
   const gql = `query {
     Page(page: 1, perPage: 50) {
-      media(type: ANIME, sort: [TRENDING_DESC, POPULARITY_DESC], status_in: [RELEASING, FINISHED, NOT_YET_RELEASED], isAdult: false) {
+      media(type: ANIME, sort: [TRENDING_DESC, POPULARITY_DESC], isAdult: false) {
         id idMal title { romaji english native } coverImage { extraLarge large color }
-        bannerImage format episodes duration status seasonYear season averageScore meanScore
-        genres synonyms description nextAiringEpisode { episode airingAt timeUntilAiring }
-        startDate { year month day } studios { nodes { name isAnimationStudio } }
+        bannerImage format episodes status seasonYear averageScore genres description
       }
     }
   }`;
@@ -480,250 +61,100 @@ async function anilistHomeFeed() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ query: gql }),
-    signal: AbortSignal.timeout(8000),
   });
   if (response.status !== 200) throw new Error('AniList home fetch failed');
   const json = await response.json();
-  anilistHomeCache = json?.data?.Page?.media || [];
-  anilistHomeCacheAt = Date.now();
-  return anilistHomeCache;
+  return json?.data?.Page?.media || [];
 }
 
-// ========================
-// STATIC SERVING & PROXIES
-// ========================
-async function serveStatic(reqUrl, res, req) {
-  try {
-    let pathname = reqUrl.pathname;
-    if (pathname === '/') pathname = '/landing.html';
-    if (pathname === '/home') pathname = '/home.html';
-    if (pathname === '/search' || pathname === '/search/') pathname = '/search.html';
-    if (pathname === '/watch' || pathname === '/watch/') pathname = '/watch.html';
-    if (pathname === '/catalog' || pathname === '/catalog/') pathname = '/catalog.html';
-    if (pathname === '/schedule' || pathname === '/schedule/') pathname = '/schedule.html';
-
-    const filePath = path.join(PUBLIC_DIR, decodeURIComponent(pathname));
-    const resolvedPath = path.resolve(filePath);
-
-    if (!resolvedPath.startsWith(PUBLIC_DIR)) {
-      res.writeHead(403, { 'Content-Type': 'text/plain' });
-      return res.end('Forbidden');
+async function anilistSearchFull(queryTitle) {
+  const gql = `query ($s: String) {
+    Page(perPage: 30) {
+      media(search: $s, type: ANIME, isAdult: false) {
+        id idMal title { romaji english native } coverImage { extraLarge large color }
+        bannerImage format episodes status seasonYear averageScore genres description
+      }
     }
-
-    const data = await fs.readFile(resolvedPath);
-    const ext = path.extname(resolvedPath).toLowerCase();
-    const headers = { 'Content-Type': getMimeType(resolvedPath) };
-
-    if (shouldCompress(res, req, ext)) {
-      const compressed = zlib.gzipSync(data);
-      headers['Content-Encoding'] = 'gzip';
-      headers['Content-Length'] = compressed.length;
-      res.writeHead(200, headers);
-      return res.end(compressed);
-    }
-
-    res.writeHead(200, headers);
-    res.end(data);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('File not found');
-    } else {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('Internal server error');
-    }
-  }
+  }`;
+  const response = await fetch(ANILIST_GRAPHQL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ query: gql, variables: { s: queryTitle } }),
+  });
+  if (response.status !== 200) throw new Error('AniList search failed');
+  const json = await response.json();
+  return json?.data?.Page?.media || [];
 }
 
-async function handleVideoProxy(reqUrl, res, req) {
-  const target = reqUrl.searchParams.get('url');
-  if (!target || !isAllowedProxyTarget(target)) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'Invalid or missing URL' }));
-  }
-
-  try {
-    const refererOverride = reqUrl.searchParams.get('referer') || '';
-    const response = await fetch(target, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        ...(refererOverride ? { 'Referer': refererOverride } : {}),
-      },
-      signal: AbortSignal.timeout(30000),
-    });
-
-    const body = await response.arrayBuffer();
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Range',
-    };
-    const contentType = response.headers.get('content-type');
-    if (contentType) headers['Content-Type'] = contentType;
-
-    res.writeHead(response.status, headers);
-    res.end(Buffer.from(body));
-  } catch (err) {
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end('Video proxy failed: ' + err.message);
-  }
+function formatAnilist(media) {
+  const title = media.title?.english || media.title?.romaji || media.title?.native || 'Unknown';
+  return {
+    id: media.id,
+    idMal: media.idMal,
+    title,
+    image: media.coverImage?.extraLarge || media.coverImage?.large || '',
+    banner: media.bannerImage || '',
+    format: media.format || 'TV',
+    episodes: media.episodes || 0,
+    status: media.status || 'RELEASING',
+    year: media.seasonYear || '',
+    score: media.averageScore || 0,
+    genres: media.genres || [],
+    description: media.description ? media.description.replace(/<[^>]+>/g, '').substring(0, 300) : ''
+  };
 }
 
-// ========================
-// MAIN HTTP SERVER
-// ========================
 const server = http.createServer(async (req, res) => {
   const reqUrl = new URL(req.url, `http://${req.headers.host}`);
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
 
   if (!rateLimit(clientIp)) {
     res.writeHead(429, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'Too many requests. Please slow down.' }));
+    return res.end(JSON.stringify({ error: 'Too many requests' }));
   }
 
-  applyCorsHeaders(res, req);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     return res.end();
   }
 
-  if (ACCESS_TOKEN && !accessGranted(req, reqUrl)) {
-    if (reqUrl.pathname === '/login') {
-      if (req.method === 'POST') {
-        const body = await getRequestBody(req);
-        const token = new URLSearchParams(body.toString('utf8')).get('token') || '';
-        if (token !== ACCESS_TOKEN) {
-          res.writeHead(403, { 'Content-Type': 'text/plain' });
-          return res.end('Invalid access token');
-        }
-        res.writeHead(302, {
-          Location: '/',
-          'Set-Cookie': `access_token=${ACCESS_TOKEN}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`,
-        });
-        return res.end();
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      return res.end(LOGIN_HTML);
-    }
-    res.writeHead(302, { Location: '/login' });
-    return res.end();
-  }
-
   try {
-    // Health Check
     if (reqUrl.pathname === '/health' || reqUrl.pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ status: 'ok', app: 'AnimeRil', uptime: process.uptime() }));
+      return res.end(JSON.stringify({ status: 'ok', app: 'AnimeRil' }));
     }
 
-    // API: Home Recently Released
     if (reqUrl.pathname === '/api/home/recently-released') {
       const media = await anilistHomeFeed();
-      const formatted = media.map(formatAnilistForHome);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ anilist: formatted, timestamp: new Date().toISOString() }));
+      return res.end(JSON.stringify({ anilist: media.map(formatAnilist) }));
     }
 
-    // API: Search
     if (reqUrl.pathname === '/api/anime/search') {
       const q = (reqUrl.searchParams.get('q') || '').trim();
-      if (!q) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Missing q parameter', results: [] }));
-      }
       const media = await anilistSearchFull(q);
-      const results = media.map(formatAnilistForHome);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ query: q, results, total: results.length }));
+      return res.end(JSON.stringify({ results: media.map(formatAnilist) }));
     }
 
-    // API: Video Proxy
-    if (reqUrl.pathname === '/proxy-video') {
-      return handleVideoProxy(reqUrl, res, req);
-    }
-
-    // API: Miruro Episodes
-    if (reqUrl.pathname === '/api/miruro/episodes') {
-      const anilistId = reqUrl.searchParams.get('anilistId');
-      if (!anilistId) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Missing anilistId' }));
-      }
-      const data = await miruroFetchEpisodes(anilistId);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify(data));
-    }
-
-    // API: Miruro Stream Sources
-    if (reqUrl.pathname === '/api/miruro/stream') {
-      const anilistId = reqUrl.searchParams.get('anilistId');
-      const provider = reqUrl.searchParams.get('provider');
-      const category = reqUrl.searchParams.get('category') || 'sub';
-      const episode = parseInt(reqUrl.searchParams.get('episode') || '', 10);
-      
-      const data = await miruroFetchEpisodes(anilistId);
-      const epList = data?.providers?.[provider]?.episodes?.[category];
-      const found = Array.isArray(epList) ? epList.find(ep => Number(ep.number) === episode) : null;
-      
-      if (!found || !found.id) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Episode not found' }));
-      }
-      
-      const sources = await miruroFetchSources(anilistId, provider, category, found.id);
-      const hls = (sources.streams || []).find(s => s.type === 'hls');
-      const hlsReferer = hls && hls.referer ? hls.referer : miruroEmbedOrigin(sources);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({
-        provider,
-        category,
-        episode: found.number,
-        streams: sources.streams || [],
-        m3u8Url: hls ? buildMiruroPlayableUrl(hls.url, hlsReferer) : null,
-      }));
-    }
-
-    // API: Animex Servers
-    if (reqUrl.pathname === '/api/animex/servers') {
-      const anilistId = reqUrl.searchParams.get('anilistId');
-      const episode = parseInt(reqUrl.searchParams.get('episode') || '', 10);
-      const data = await animexScraper.animexServers(anilistId, episode);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify(data));
-    }
-
-    // API: Animex Stream
-    if (reqUrl.pathname === '/api/animex/stream') {
-      const anilistId = reqUrl.searchParams.get('anilistId');
-      const episode = parseInt(reqUrl.searchParams.get('episode') || '', 10);
-      const type = reqUrl.searchParams.get('type') || 'sub';
-      const provider = reqUrl.searchParams.get('providerId') || '';
-      
-      const data = await animexScraper.animexSources(anilistId, episode, type, provider);
-      const src = (data.sources || []).find((s) => /\.m3u8($|\?)/i.test(s.url || ''));
-      const m3u8Url = (src && !data.error)
-        ? `/proxy-video?url=${encodeURIComponent(src.url)}&referer=${encodeURIComponent((data.headers && (data.headers.Referer || data.headers.Origin)) || '')}`
-        : null;
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ ...data, m3u8Url }));
-    }
-
-    // Fallback: Static Files
-    return serveStatic(reqUrl, res, req);
+    // Static files serving
+    let pathname = reqUrl.pathname;
+    if (pathname === '/') pathname = '/index.html';
+    const filePath = path.join(ROOT, decodeURIComponent(pathname));
+    const data = await fs.readFile(filePath);
+    res.writeHead(200, { 'Content-Type': getMimeType(filePath) });
+    res.end(data);
 
   } catch (err) {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: err.message || 'Internal server error' }));
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end('<h1>404 Not Found</h1>');
   }
 });
 
 server.listen(PORT, () => {
-  console.log(`\x1b[36m╔════════════════════════════════════════════╗\x1b[0m`);
-  console.log(`\x1b[36m║      🎌 AnimeRil - Backend Server 🎌       ║\x1b[0m`);
-  console.log(`\x1b[36m╠════════════════════════════════════════════╣\x1b[0m`);
-  console.log(`\x1b[36m║  Local:    \x1b[4mhttp://localhost:${PORT}/\x1b[0m\x1b[36m          ║\x1b[0m`;
-  console.log(`\x1b[36m╚════════════════════════════════════════════╝\x1b[0m`);
+  console.log(`AnimeRil Server running on port ${PORT}`);
 });
